@@ -10,6 +10,7 @@ use Minecraft::Projection;
 use Minecraft::MapTiles;
 use Getopt::Long;
 
+my $saves;
 my $from;
 my $to;
 my $postcode;
@@ -42,6 +43,7 @@ BEGIN {
 	}
 
 	if( !GetOptions (
+              	"saves=s"   => \$saves,      
               	"from=s"   => \$from,      
               	"to=s"   => \$to,      
               	"postcode=s"   => \$postcode,      
@@ -58,7 +60,6 @@ BEGIN {
 		help();
 		exit( 1 );
 	}
-
 
 	foreach my $part ( qw/ colours blocks / )
 	{
@@ -106,6 +107,11 @@ my $worldname = $ARGV[0];
 if( !defined $worldname )
 {
 	die "No worldname given";
+}
+
+if( !defined $saves )
+{
+        $saves = "$FindBin::Bin/saves";
 }
 
 # goal is to end up with bottom left & top right corners in Easting/Northing
@@ -206,7 +212,7 @@ print "=======================================================\n";
 print "University of Southampton Open Data Minecraft Map Maker\n";
 print "=======================================================\n";
 
-if( -e "$FindBin::Bin/saves/$worldname" )
+if( -e "$saves/$worldname" )
 {
 	if( !$replace )
 	{
@@ -216,16 +222,16 @@ if( -e "$FindBin::Bin/saves/$worldname" )
 	`rm -rf "$FindBin::Bin/saves/$worldname"`;
 }
 print "Cloning 'bedrock' as a base world\n";
-`cp -a "$FindBin::Bin/BedRock" "$FindBin::Bin/saves/$worldname"`;
+`cp -a "$FindBin::Bin/BedRock" "$saves/$worldname"`;
 
 print "Setting World Options\n";
-my $nbt = Minecraft::NBT->from_gzip_file( "$FindBin::Bin/saves/$worldname/level.dat" );
+my $nbt = Minecraft::NBT->from_gzip_file( "$saves/$worldname/level.dat" );
 $nbt->{Data}->{LevelName}->{_value} = $worldname;
 $nbt->{Data}->{LastPlayed}->{_value} = time()."000";
-$nbt->to_gzip_file( "$FindBin::Bin/saves/$worldname/level.dat" );
+$nbt->to_gzip_file( "$saves/$worldname/level.dat" );
 
 
-my $mc = new Minecraft( "$FindBin::Bin/saves" );
+my $mc = new Minecraft( "$saves" );
 my $world = $mc->world( $worldname );
 
 
